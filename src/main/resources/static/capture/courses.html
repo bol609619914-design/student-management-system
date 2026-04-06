@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>Capture Courses</title>
+</head>
+<body>
+<iframe name="loginFrame" style="display:none;"></iframe>
+<form id="loginForm" action="/login" method="post" target="loginFrame">
+    <input type="hidden" name="username" value="admin">
+    <input type="hidden" name="password" value="admin123">
+</form>
+<script>
+    document.getElementById("loginForm").submit();
+    setTimeout(function () {
+        window.location.href = "/courses";
+    }, 2500);
+</script>
+</body>
+</html>

@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>Auto Login</title>
+    <style>
+        body {
+            margin: 0;
+            min-height: 100vh;
+            display: grid;
+            place-items: center;
+            font-family: "Microsoft YaHei", sans-serif;
+            background: linear-gradient(135deg, #f5efe5, #edf5ff);
+            color: #1f2937;
+        }
+
+        .box {
+            padding: 24px 28px;
+            border-radius: 18px;
+            background: rgba(255, 255, 255, 0.92);
+            box-shadow: 0 20px 40px rgba(15, 23, 42, 0.12);
+        }
+    </style>
+</head>
+<body>
+<div class="box">正在自动登录并跳转到课程管理页...</div>
+<iframe name="loginFrame" style="display:none;"></iframe>
+<form id="loginForm" action="http://localhost:8080/login" method="post" target="loginFrame">
+    <input type="hidden" name="username" value="admin">
+    <input type="hidden" name="password" value="admin123">
+</form>
+<script>
+    document.getElementById("loginForm").submit();
+    setTimeout(function () {
+        window.location.href = "http://localhost:8080/courses";
+    }, 2500);
+</script>
+</body>
+</html>

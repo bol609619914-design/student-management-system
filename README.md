@@ -2,6 +2,24 @@
 
 基于 `Spring Boot + Thymeleaf + MySQL` 实现的高校教务管理系统，覆盖学生学籍、课程选课、成绩评价、公告通知、请假审批与首页数据看板等典型教务场景，适合作为 Java Web 课程设计、毕业设计或综合项目展示。
 
+## 项目截图
+
+### 登录页
+
+![登录页](docs/screenshots/login.png)
+
+### 首页总览
+
+![首页总览](docs/screenshots/dashboard.png)
+
+### 学籍信息页
+
+![学籍信息页](docs/screenshots/students.png)
+
+### 课程与选课页
+
+![课程与选课页](docs/screenshots/courses.png)
+
 ## 项目简介
 
 本项目采用 `Spring Boot` 单体式架构开发，后端使用 `Spring MVC + Spring Data JPA`，前端使用 `Thymeleaf` 服务端模板渲染，数据库使用 `MySQL`。系统围绕高校常见教务业务流程展开，实现了从账号认证、学籍维护、课程管理到成绩统计、公告通知和请假审批的一体化功能。
