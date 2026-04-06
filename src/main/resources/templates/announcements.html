@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>公告通知</title><link rel="stylesheet" th:href="@{/css/style.css}"></head>
+<body>
+<div class="admin-shell">
+    <div th:replace="~{fragments :: sidebar('announcements')}"></div>
+    <main class="main-content">
+        <section class="page-header"><div><p class="eyebrow">Campus Services</p><h1>通知公告</h1><p>老师可发布公告，学生登录后显示未读提醒红点。</p></div></section>
+        <div class="message success" th:if="${successMessage}" th:text="${successMessage}"></div>
+        <section class="panel form-panel" th:if="${currentUser.role.name() != 'STUDENT'}">
+            <form th:action="@{/announcements}" method="post">
+                <div class="form-grid">
+                    <div class="form-item"><label>公告标题</label><input name="title" type="text"></div>
+                    <div class="form-item"><label>是否置顶</label><select name="pinned"><option value="true">是</option><option value="false">否</option></select></div>
+                    <div class="form-item full-width"><label>公告内容</label><input name="content" type="text"></div>
+                </div>
+                <div class="form-actions"><button class="primary-btn" type="submit">发布公告</button></div>
+            </form>
+        </section>
+        <section class="list-grid">
+            <article class="notice-card" th:each="item : ${announcements}">
+                <div class="notice-top"><span class="tag" th:if="${item.pinned}">置顶</span><span th:text="${item.publishedAt}">2026-04-05</span></div>
+                <h3 th:text="${item.title}">公告</h3>
+                <p th:text="${item.content}">内容</p>
+                <small th:text="${'发布人：' + item.publisher.fullName}">发布人</small>
+            </article>
+        </section>
+    </main>
+</div>
+</body>
+</html>

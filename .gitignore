@@ -1,0 +1,14 @@
+target/
+.idea/
+*.iml
+*.log
+.DS_Store
+Thumbs.db
+
+# Local runtime / debug files
+dashboard-debug.err.log
+dashboard-debug.log
+
+# OS / editor temp files
+*.tmp
+*.swp

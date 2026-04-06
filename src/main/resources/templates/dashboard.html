@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>首页总览</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<div class="admin-shell">
+    <div th:replace="~{fragments :: sidebar('dashboard')}"></div>
+    <main class="main-content">
+        <section class="page-header">
+            <div>
+                <p class="eyebrow">数字化教务驾驶舱</p>
+                <h1>首页总览</h1>
+                <p>围绕账户权限、学籍、课程、成绩与校园服务五大模块构建的数据化管理主页，适合作为毕业设计的总控展示页。</p>
+            </div>
+            <a class="secondary-btn" th:href="@{/profile}">进入个人中心</a>
+        </section>
+
+        <section class="dashboard-hero">
+            <div class="dashboard-hero-copy">
+                <span class="hero-badge">实时运行视图</span>
+                <h2 th:text="${currentUser != null ? '欢迎回来，' + currentUser.fullName : '欢迎进入教务系统'}">欢迎进入教务系统</h2>
+                <p>当前首页聚合了学生规模、课程运行、成绩质量、请假流转与公告动态，既能演示业务完整度，也能体现可视化能力。</p>
+                <div class="hero-tags">
+                    <span>多角色权限</span>
+                    <span>课程与选课</span>
+                    <span>成绩量化分析</span>
+                    <span>公告与请假协同</span>
+                </div>
+            </div>
+            <div class="hero-insight-card">
+                <p>本周教学负载</p>
+                <strong th:text="|${stats.courseCount} 门在管课程|">0 门在管课程</strong>
+                <div class="hero-mini-metrics">
+                    <div>
+                        <span>选课总人次</span>
+                        <b th:text="${stats.enrollmentCount}">0</b>
+                    </div>
+                    <div>
+                        <span>平均绩点</span>
+                        <b th:text="${stats.avgGpa}">0.0</b>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="stats-grid dashboard-stats">
+            <article class="metric-card primary">
+                <span class="metric-label">学生总人数</span>
+                <strong class="metric-value" th:text="${stats.studentCount}">0</strong>
+                <p class="metric-note">覆盖在校档案与学籍状态管理</p>
+            </article>
+            <article class="metric-card">
+                <span class="metric-label">课程总数</span>
+                <strong class="metric-value" th:text="${stats.courseCount}">0</strong>
+                <p class="metric-note">已纳入课程库与排课数据</p>
+            </article>
+            <article class="metric-card">
+                <span class="metric-label">成绩及格率</span>
+                <strong class="metric-value" th:text="|${stats.passRate}%|">0%</strong>
+                <p class="metric-note">根据当前成绩记录自动计算</p>
+            </article>
+            <article class="metric-card warm">
+                <span class="metric-label">请假申请数</span>
+                <strong class="metric-value" th:text="${stats.leaveCount}">0</strong>
+                <p class="metric-note">关联审批流与考勤处理状态</p>
+            </article>
+            <article class="metric-card">
+                <span class="metric-label">平均绩点</span>
+                <strong class="metric-value" th:text="${stats.avgGpa}">0.0</strong>
+                <p class="metric-note">支持加权总评与排名分析</p>
+            </article>
+            <article class="metric-card danger">
+                <span class="metric-label">挂科预警数</span>
+                <strong class="metric-value" th:text="${stats.failedCount}">0</strong>
+                <p class="metric-note">用于识别学业风险并重点跟进</p>
+            </article>
+        </section>
+
+        <section class="dashboard-grid">
+            <article class="panel chart-panel">
+                <div class="panel-head">
+                    <div>
+                        <h2>每周课程负载分布</h2>
+                        <p>展示课程在工作日的排布情况，用于体现排课密度与教务调度能力。</p>
+                    </div>
+                    <span class="tag">教务运行</span>
+                </div>
+                <div class="bar-chart">
+                    <div class="bar-item" th:each="item : ${weekdayLoad}">
+                        <div class="bar-label-row">
+                            <span th:text="${item.key}">周一</span>
+                            <strong th:text="|${item.value} 门|">0 门</strong>
+                        </div>
+                        <div class="bar-track">
+                            <div class="bar-fill" th:style="'width:' + (${maxWeekdayLoad == 0 ? 0 : item.value * 100 / maxWeekdayLoad}) + '%'"></div>
+                        </div>
+                    </div>
+                </div>
+            </article>
+
+            <article class="panel quality-panel" th:with="totalGender=${stats.maleCount + stats.femaleCount}">
+                <div class="panel-head">
+                    <div>
+                        <h2>成绩与结构质量看板</h2>
+                        <p>从绩点、通过率、性别结构和风险预警四个维度，快速观察当前运行状态。</p>
+                    </div>
+                    <span class="tag">教学质量</span>
+                </div>
+                <div class="quality-metrics">
+                    <div class="quality-box">
+                        <span>平均绩点</span>
+                        <strong th:text="${stats.avgGpa}">0.0</strong>
+                    </div>
+                    <div class="quality-box">
+                        <span>通过率</span>
+                        <strong th:text="|${stats.passRate}%|">0%</strong>
+                    </div>
+                </div>
+                <div class="meter-group">
+                    <div class="meter-row">
+                        <span>男生占比</span>
+                        <div class="meter">
+                            <div class="meter-fill" th:style="'width:' + (${totalGender == 0 ? 0 : stats.maleCount * 100 / totalGender}) + '%'"></div>
+                        </div>
+                        <strong th:text="${stats.maleCount}">0</strong>
+                    </div>
+                    <div class="meter-row">
+                        <span>女生占比</span>
+                        <div class="meter">
+                            <div class="meter-fill warm" th:style="'width:' + (${totalGender == 0 ? 0 : stats.femaleCount * 100 / totalGender}) + '%'"></div>
+                        </div>
+                        <strong th:text="${stats.femaleCount}">0</strong>
+                    </div>
+                </div>
+                <div class="warning-strip">
+                    <span>挂科预警</span>
+                    <strong th:text="|${stats.failedCount} 条|">0 条</strong>
+                    <p>可在成绩评价模块中查看学生总评、绩点与排名详情。</p>
+                </div>
+            </article>
+        </section>
+
+        <section class="dashboard-grid">
+            <article class="panel">
+                <div class="panel-head">
+                    <div>
+                        <h2>热门课程选课率</h2>
+                        <p>按选课人数排序，突出高关注课程与容量使用情况。</p>
+                    </div>
+                    <span class="tag">课程运营</span>
+                </div>
+                <div class="course-progress-list">
+                    <div class="course-progress-item" th:each="item : ${topCourses}">
+                        <div class="course-progress-head">
+                            <div>
+                                <strong th:text="${item.course.courseName}">Java Web 开发</strong>
+                                <p th:text="${item.course.teacher != null ? item.course.teacher.fullName + ' · ' + item.course.weekDay : item.course.weekDay}">教师 · 周一</p>
+                            </div>
+                            <span th:text="|${item.selected}/${item.course.capacity}|">0/0</span>
+                        </div>
+                        <div class="bar-track thin">
+                            <div class="bar-fill warm" th:style="'width:' + item.usageRate + '%'"></div>
+                        </div>
+                        <div class="course-progress-foot">
+                            <span th:text="|使用率 ${item.usageRate}%|">使用率 0%</span>
+                            <span th:text="${item.course.classroom}">教室</span>
+                        </div>
+                    </div>
+                </div>
+            </article>
+
+            <article class="panel">
+                <div class="panel-head">
+                    <div>
+                        <h2>绩点排名</h2>
+                        <p>根据总评自动换算绩点并生成班级排名。</p>
+                    </div>
+                    <span class="tag">成绩分析</span>
+                </div>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                        <tr>
+                            <th>排名</th>
+                            <th>学生</th>
+                            <th>班级</th>
+                            <th>GPA</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="item : ${ranking}">
+                            <td th:text="${item.rank}">1</td>
+                            <td th:text="${item.student.name}">张三</td>
+                            <td th:text="${item.student.classroom}">软件工程 1 班</td>
+                            <td th:text="${item.gpa}">3.5</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </article>
+        </section>
+
+        <section class="list-grid">
+            <article class="panel">
+                <div class="panel-head">
+                    <div>
+                        <h2>最新公告</h2>
+                        <p>展示最近发布的通知公告，形成首页消息流。</p>
+                    </div>
+                    <a class="link-btn" th:href="@{/announcements}">查看全部</a>
+                </div>
+                <div class="timeline-list">
+                    <div class="timeline-item" th:each="announcement : ${recentAnnouncements}">
+                        <div class="timeline-marker"></div>
+                        <div class="timeline-content">
+                            <div class="timeline-top">
+                                <strong th:text="${announcement.title}">考试安排通知</strong>
+                                <span class="tag" th:if="${announcement.pinned}">置顶</span>
+                            </div>
+                            <p th:text="${announcement.content}">公告内容</p>
+                            <div class="timeline-meta">
+                                <span th:text="${announcement.publisher != null ? announcement.publisher.fullName : '系统发布'}">系统发布</span>
+                                <span th:text="${announcement.publishedAt != null ? #temporals.format(announcement.publishedAt, 'yyyy-MM-dd HH:mm') : '刚刚'}">2026-04-06 09:00</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </article>
+
+            <article class="panel">
+                <div class="panel-head">
+                    <div>
+                        <h2>请假审批动态</h2>
+                        <p>把学生请假、审批进度与考勤联动状态集中展示。</p>
+                    </div>
+                    <a class="link-btn" th:href="@{/leaves}">进入审批</a>
+                </div>
+                <div class="timeline-list">
+                    <div class="timeline-item" th:each="leave : ${recentLeaves}">
+                        <div class="timeline-marker soft"></div>
+                        <div class="timeline-content">
+                            <div class="timeline-top">
+                                <strong th:text="${leave.student != null ? leave.student.name : '未关联学生'}">李四</strong>
+                                <span class="status-chip" th:text="${leave.status != null ? leave.status.label : '待处理'}">待处理</span>
+                            </div>
+                            <p th:text="${leave.reason}">病假申请</p>
+                            <div class="timeline-meta">
+                                <span th:text="|${leave.startDate} 至 ${leave.endDate}|">2026-04-01 至 2026-04-02</span>
+                                <span th:text="${leave.attendanceLinked ? '已关联考勤' : '待关联考勤'}">已关联考勤</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </article>
+        </section>
+    </main>
+</div>
+</body>
+</html>

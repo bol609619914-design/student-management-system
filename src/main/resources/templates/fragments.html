@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<body>
+<aside class="sidebar" th:fragment="sidebar(active)">
+    <div class="brand">
+        <h2>教务系统</h2>
+        <p>五大模块一体化平台</p>
+    </div>
+    <nav class="menu">
+        <a th:classappend="${active == 'dashboard'} ? ' active'" th:href="@{/dashboard}">总览首页</a>
+        <a th:classappend="${active == 'students'} ? ' active'" th:href="@{/students}">学籍信息</a>
+        <a th:classappend="${active == 'courses'} ? ' active'" th:href="@{/courses}">课程与选课</a>
+        <a th:classappend="${active == 'grades'} ? ' active'" th:href="@{/grades}">成绩评价</a>
+        <a th:classappend="${active == 'announcements'} ? ' active'" th:href="@{/announcements}">
+            公告通知
+            <span class="badge-dot" th:if="${unreadAnnouncementCount > 0}" th:text="${unreadAnnouncementCount}">1</span>
+        </a>
+        <a th:classappend="${active == 'leaves'} ? ' active'" th:href="@{/leaves}">请假审批</a>
+        <a th:if="${currentUser != null and currentUser.role.name() == 'ADMIN'}"
+           th:classappend="${active == 'users'} ? ' active'"
+           th:href="@{/users}">权限管理</a>
+        <a th:classappend="${active == 'profile'} ? ' active'" th:href="@{/profile}">个人中心</a>
+    </nav>
+    <div class="sidebar-footer" th:if="${currentUser != null}">
+        <div class="avatar-mini" th:text="${#strings.substring(currentUser.fullName,0,1)}">管</div>
+        <div>
+            <strong th:text="${currentUser.fullName}">系统管理员</strong>
+            <p th:text="${currentUser.role.label}">管理员</p>
+        </div>
+    </div>
+</aside>
+</body>
+</html>

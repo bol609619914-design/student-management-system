@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>注册</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<div class="auth-page">
+    <section class="auth-card register-card">
+        <div class="auth-copy">
+            <p class="eyebrow">学生管理系统</p>
+            <h1>注册账号</h1>
+            <p>请先创建系统账号，注册成功后即可进入学生管理系统。</p>
+        </div>
+
+        <div class="auth-form-panel">
+            <div class="message error" th:if="${authError}" th:text="${authError}"></div>
+
+            <form th:action="@{/register}" th:object="${registerForm}" method="post">
+                <div class="form-item">
+                    <label for="fullName">姓名</label>
+                    <input id="fullName" type="text" th:field="*{fullName}" placeholder="请输入姓名">
+                    <p class="field-error" th:if="${#fields.hasErrors('fullName')}" th:errors="*{fullName}"></p>
+                </div>
+
+                <div class="form-item">
+                    <label for="username">用户名</label>
+                    <input id="username" type="text" th:field="*{username}" placeholder="请输入用户名">
+                    <p class="field-error" th:if="${#fields.hasErrors('username')}" th:errors="*{username}"></p>
+                </div>
+
+                <div class="form-item">
+                    <label for="password">密码</label>
+                    <input id="password" type="password" th:field="*{password}" placeholder="请输入密码">
+                    <p class="field-error" th:if="${#fields.hasErrors('password')}" th:errors="*{password}"></p>
+                </div>
+
+                <div class="form-item">
+                    <label for="confirmPassword">确认密码</label>
+                    <input id="confirmPassword" type="password" th:field="*{confirmPassword}" placeholder="请再次输入密码">
+                    <p class="field-error" th:if="${#fields.hasErrors('confirmPassword')}" th:errors="*{confirmPassword}"></p>
+                </div>
+
+                <button class="primary-btn full-btn" type="submit">注册</button>
+            </form>
+
+            <p class="switch-text">已经有账号了？<a th:href="@{/login}">去登录</a></p>
+        </div>
+    </section>
+</div>
+</body>
+</html>

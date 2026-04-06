@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>课程与选课</title><link rel="stylesheet" th:href="@{/css/style.css}"></head>
+<body>
+<div class="admin-shell">
+    <div th:replace="~{fragments :: sidebar('courses')}"></div>
+    <main class="main-content">
+        <section class="page-header"><div><p class="eyebrow">Academic Affairs</p><h1>课程档案与选课管理</h1><p>支持课程库维护、排课冲突校验和学生在线选课。</p></div></section>
+        <div class="message success" th:if="${successMessage}" th:text="${successMessage}"></div>
+        <div class="message error" th:if="${errorMessage}" th:text="${errorMessage}"></div>
+        <section class="panel form-panel" th:if="${currentUser.role.name() != 'STUDENT'}">
+            <form th:action="@{/courses}" method="post">
+                <div class="form-grid">
+                    <div class="form-item"><label>课程编号</label><input name="courseCode" type="text"></div>
+                    <div class="form-item"><label>课程名称</label><input name="courseName" type="text"></div>
+                    <div class="form-item"><label>学分</label><input name="credit" type="number"></div>
+                    <div class="form-item"><label>学时</label><input name="classHours" type="number"></div>
+                    <div class="form-item"><label>课程性质</label><select name="nature"><option th:each="nature : ${natures}" th:value="${nature}" th:text="${nature.label}"></option></select></div>
+                    <div class="form-item"><label>授课教师</label><select name="teacherId"><option th:each="teacher : ${teachers}" th:value="${teacher.id}" th:text="${teacher.fullName}"></option></select></div>
+                    <div class="form-item"><label>教室</label><input name="classroom" type="text"></div>
+                    <div class="form-item"><label>星期</label><select name="weekDay"><option>周一</option><option>周二</option><option>周三</option><option>周四</option><option>周五</option></select></div>
+                    <div class="form-item"><label>开始节次</label><input name="startSection" type="number"></div>
+                    <div class="form-item"><label>结束节次</label><input name="endSection" type="number"></div>
+                    <div class="form-item"><label>容量</label><input name="capacity" type="number"></div>
+                    <div class="form-item full-width"><label>课程说明</label><input name="description" type="text"></div>
+                </div>
+                <div class="form-actions"><button class="primary-btn" type="submit">保存课程</button></div>
+            </form>
+        </section>
+        <section class="panel">
+            <table>
+                <thead><tr><th>编号</th><th>课程</th><th>教师</th><th>时间</th><th>教室</th><th>性质</th><th>操作</th></tr></thead>
+                <tbody>
+                <tr th:each="course : ${courses}">
+                    <td th:text="${course.courseCode}">CS301</td>
+                    <td th:text="${course.courseName}">Java Web 开发</td>
+                    <td th:text="${course.teacher != null ? course.teacher.fullName : '未安排'}">张老师</td>
+                    <td th:text="${course.weekDay + ' 第' + course.startSection + '-' + course.endSection + '节'}">周一 第1-2节</td>
+                    <td th:text="${course.classroom}">A301</td>
+                    <td th:text="${course.nature.label}">必修</td>
+                    <td class="actions">
+                        <a class="primary-btn" th:if="${currentUser.role.name() == 'STUDENT'}" th:href="@{'/courses/' + ${course.id} + '/select'}">立即选课</a>
+                        <a class="danger-btn" th:if="${currentUser.role.name() != 'STUDENT'}" th:href="@{'/courses/' + ${course.id} + '/delete'}">删除</a>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </section>
+        <section class="panel" th:if="${currentUser.role.name() == 'STUDENT'}">
+            <div class="panel-head"><h2>我的课表</h2><p>已选课程自动生成课表</p></div>
+            <table>
+                <thead><tr><th>课程</th><th>教师</th><th>上课时间</th><th>教室</th></tr></thead>
+                <tbody>
+                <tr th:each="enroll : ${myCourses}">
+                    <td th:text="${enroll.course.courseName}">Java Web 开发</td>
+                    <td th:text="${enroll.course.teacher.fullName}">张老师</td>
+                    <td th:text="${enroll.course.weekDay + ' 第' + enroll.course.startSection + '-' + enroll.course.endSection + '节'}">周一</td>
+                    <td th:text="${enroll.course.classroom}">A301</td>
+                </tr>
+                </tbody>
+            </table>
+        </section>
+    </main>
+</div>
+</body>
+</html>

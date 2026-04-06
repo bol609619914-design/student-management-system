@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>学籍信息</title><link rel="stylesheet" th:href="@{/css/style.css}"></head>
+<body>
+<div class="admin-shell">
+    <div th:replace="~{fragments :: sidebar('students')}"></div>
+    <main class="main-content">
+        <section class="page-header">
+            <div><p class="eyebrow">Student Information System</p><h1>学籍信息数字化</h1><p>覆盖基础档案、照片、班级归属和学籍全生命周期管理。</p></div>
+            <a class="primary-btn" th:if="${currentUser.role.name() != 'STUDENT'}" th:href="@{/students/new}">新增学生</a>
+        </section>
+        <div class="message success" th:if="${successMessage}" th:text="${successMessage}"></div>
+        <div class="message error" th:if="${errorMessage}" th:text="${errorMessage}"></div>
+        <section class="stats-grid">
+            <article class="stat-card"><span>学生总数</span><strong th:text="${studentCount}">0</strong></article>
+            <article class="stat-card"><span>平均年龄</span><strong th:text="${averageAge}">0</strong></article>
+            <article class="stat-card"><span>数据状态</span><strong>已同步</strong></article>
+        </section>
+        <section class="panel">
+            <table>
+                <thead><tr><th>学号</th><th>姓名</th><th>班级</th><th>专业</th><th>入学日期</th><th>状态</th><th>操作</th></tr></thead>
+                <tbody>
+                <tr th:each="student : ${students}">
+                    <td th:text="${student.studentNo}">20260001</td>
+                    <td th:text="${student.name}">王小明</td>
+                    <td th:text="${student.classroom}">计算机1班</td>
+                    <td th:text="${student.major}">计算机科学与技术</td>
+                    <td th:text="${student.enrollmentDate}">2026-09-01</td>
+                    <td th:text="${student.currentStatus}">在读</td>
+                    <td class="actions">
+                        <a class="link-btn" th:href="@{'/students/' + ${student.id} + '/status'}">异动历史</a>
+                        <a class="link-btn" th:if="${currentUser.role.name() != 'STUDENT'}" th:href="@{'/students/edit/' + ${student.id}}">编辑</a>
+                        <a class="danger-btn" th:if="${currentUser.role.name() != 'STUDENT'}" th:href="@{'/students/delete/' + ${student.id}}">删除</a>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </section>
+    </main>
+</div>
+</body>
+</html>

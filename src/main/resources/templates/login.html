@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>登录</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<div class="auth-page">
+    <section class="auth-card">
+        <div class="auth-copy">
+            <p class="eyebrow">学生管理系统</p>
+            <h1>用户登录</h1>
+            <p>登录后即可进入系统，管理学生信息、课程数据和教务业务。</p>
+        </div>
+
+        <div class="auth-form-panel">
+            <div class="message success" th:if="${successMessage}" th:text="${successMessage}"></div>
+            <div class="message error" th:if="${authError}" th:text="${authError}"></div>
+
+            <form th:action="@{/login}" th:object="${loginForm}" method="post">
+                <div class="form-item">
+                    <label for="username">用户名</label>
+                    <input id="username" type="text" th:field="*{username}" placeholder="请输入用户名">
+                    <p class="field-error" th:if="${#fields.hasErrors('username')}" th:errors="*{username}"></p>
+                </div>
+
+                <div class="form-item">
+                    <label for="password">密码</label>
+                    <input id="password" type="password" th:field="*{password}" placeholder="请输入密码">
+                    <p class="field-error" th:if="${#fields.hasErrors('password')}" th:errors="*{password}"></p>
+                </div>
+
+                <button class="primary-btn full-btn" type="submit">登录</button>
+            </form>
+
+            <p class="switch-text">还没有账号？<a th:href="@{/register}">立即注册</a></p>
+        </div>
+    </section>
+</div>
+</body>
+</html>
