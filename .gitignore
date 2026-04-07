@@ -12,3 +12,4 @@ dashboard-debug.log
 # OS / editor temp files
 *.tmp
 *.swp
+dist/
