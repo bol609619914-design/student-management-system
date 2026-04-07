@@ -1,8 +1,11 @@
 package com.example.studentms.service;
 
+import com.example.studentms.model.AppUser;
 import com.example.studentms.model.Student;
 import com.example.studentms.model.StudentStatusChange;
 import com.example.studentms.model.StudentStatusType;
+import com.example.studentms.model.UserRole;
+import com.example.studentms.repository.AppUserRepository;
 import com.example.studentms.repository.StudentRepository;
 import com.example.studentms.repository.StudentStatusChangeRepository;
 import org.springframework.stereotype.Service;
@@ -13,10 +16,14 @@ import java.util.List;
 @Service
 public class StudentService {
 
+    private final AppUserRepository appUserRepository;
     private final StudentRepository studentRepository;
     private final StudentStatusChangeRepository statusChangeRepository;
 
-    public StudentService(StudentRepository studentRepository, StudentStatusChangeRepository statusChangeRepository) {
+    public StudentService(AppUserRepository appUserRepository,
+                          StudentRepository studentRepository,
+                          StudentStatusChangeRepository statusChangeRepository) {
+        this.appUserRepository = appUserRepository;
         this.studentRepository = studentRepository;
         this.statusChangeRepository = statusChangeRepository;
     }
@@ -31,6 +38,32 @@ public class StudentService {
 
     public Student findByUserId(Long userId) {
         return studentRepository.findByUserId(userId).orElse(null);
+    }
+
+    public Student findOrCreateByUserId(Long userId) {
+        Student existingStudent = findByUserId(userId);
+        if (existingStudent != null) {
+            return existingStudent;
+        }
+
+        AppUser user = appUserRepository.findById(userId).orElse(null);
+        if (user == null || user.getRole() != UserRole.STUDENT) {
+            return null;
+        }
+
+        Student student = new Student();
+        student.setUser(user);
+        student.setStudentNo("S" + user.getId() + System.currentTimeMillis() % 10000);
+        student.setName(user.getFullName() == null || user.getFullName().isBlank() ? user.getUsername() : user.getFullName());
+        student.setAge(18);
+        student.setGender("男");
+        student.setClassroom("待分班");
+        student.setPhone(user.getPhone() == null ? "" : user.getPhone());
+        student.setMajor("待分配专业");
+        student.setEnrollmentDate(LocalDate.now());
+        student.setCurrentStatus("在读");
+        student.setPhotoUrl(user.getAvatarUrl());
+        return studentRepository.save(student);
     }
 
     public void save(Student student) {

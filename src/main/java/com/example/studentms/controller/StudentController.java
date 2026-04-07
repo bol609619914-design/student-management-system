@@ -32,7 +32,7 @@ public class StudentController {
     public String listStudents(HttpSession session, Model model) {
         AppUser currentUser = (AppUser) session.getAttribute("loginUser");
         boolean studentView = currentUser.getRole() == UserRole.STUDENT;
-        Student self = studentView ? studentService.findByUserId(currentUser.getId()) : null;
+        Student self = studentView ? studentService.findOrCreateByUserId(currentUser.getId()) : null;
         List<Student> students = studentView ? List.of(self) : studentService.findAll();
         model.addAttribute("students", students.stream().filter(item -> item != null).toList());
         model.addAttribute("studentCount", studentView ? (self == null ? 0 : 1) : studentService.count());
@@ -127,7 +127,7 @@ public class StudentController {
     public String statusPage(@PathVariable Long id, HttpSession session, Model model) {
         AppUser currentUser = (AppUser) session.getAttribute("loginUser");
         if (currentUser.getRole() == UserRole.STUDENT) {
-            Student self = studentService.findByUserId(currentUser.getId());
+            Student self = studentService.findOrCreateByUserId(currentUser.getId());
             if (self == null || !self.getId().equals(id)) {
                 return "redirect:/students";
             }

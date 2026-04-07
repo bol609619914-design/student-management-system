@@ -17,6 +17,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.util.List;
+
 @Controller
 public class CourseController {
 
@@ -41,8 +43,8 @@ public class CourseController {
                 .toList());
         model.addAttribute("natures", CourseNature.values());
         if (currentUser.getRole() == UserRole.STUDENT) {
-            Student student = studentService.findByUserId(currentUser.getId());
-            model.addAttribute("myCourses", courseService.findEnrollmentsByStudent(student.getId()));
+            Student student = studentService.findOrCreateByUserId(currentUser.getId());
+            model.addAttribute("myCourses", student == null ? List.of() : courseService.findEnrollmentsByStudent(student.getId()));
         }
         return "courses";
     }
@@ -109,7 +111,10 @@ public class CourseController {
             return "redirect:/courses";
         }
         try {
-            Student student = studentService.findByUserId(currentUser.getId());
+            Student student = studentService.findOrCreateByUserId(currentUser.getId());
+            if (student == null) {
+                throw new IllegalArgumentException("当前账号未绑定学生档案");
+            }
             courseService.enroll(student, id);
             redirectAttributes.addFlashAttribute("successMessage", "选课成功");
         } catch (IllegalArgumentException ex) {

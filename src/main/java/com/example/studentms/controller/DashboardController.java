@@ -28,7 +28,7 @@ public class DashboardController {
         }
 
         if ("STUDENT".equals(currentUser.getRole().name())) {
-            Student student = studentService.findByUserId(currentUser.getId());
+            Student student = studentService.findOrCreateByUserId(currentUser.getId());
             model.addAttribute("studentDashboard", dashboardService.buildStudentDashboard(currentUser, student));
             return "dashboard-student";
         }

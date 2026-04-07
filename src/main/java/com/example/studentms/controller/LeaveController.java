@@ -1,6 +1,7 @@
 package com.example.studentms.controller;
 
 import com.example.studentms.model.AppUser;
+import com.example.studentms.model.Student;
 import com.example.studentms.model.UserRole;
 import com.example.studentms.service.LeaveService;
 import com.example.studentms.service.StudentService;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Controller
 public class LeaveController {
@@ -30,7 +32,8 @@ public class LeaveController {
     public String leaves(HttpSession session, Model model) {
         AppUser currentUser = (AppUser) session.getAttribute("loginUser");
         if (currentUser.getRole() == UserRole.STUDENT) {
-            model.addAttribute("leaveRequests", leaveService.findStudentLeaves(studentService.findByUserId(currentUser.getId()).getId()));
+            Student student = studentService.findOrCreateByUserId(currentUser.getId());
+            model.addAttribute("leaveRequests", student == null ? List.of() : leaveService.findStudentLeaves(student.getId()));
         } else {
             model.addAttribute("leaveRequests", leaveService.findAll());
         }
@@ -47,7 +50,12 @@ public class LeaveController {
         if (currentUser.getRole() != UserRole.STUDENT) {
             return "redirect:/leaves";
         }
-        leaveService.submit(studentService.findByUserId(currentUser.getId()), reason, startDate, endDate);
+        Student student = studentService.findOrCreateByUserId(currentUser.getId());
+        if (student == null) {
+            redirectAttributes.addFlashAttribute("errorMessage", "当前账号未绑定学生档案");
+            return "redirect:/leaves";
+        }
+        leaveService.submit(student, reason, startDate, endDate);
         redirectAttributes.addFlashAttribute("successMessage", "请假申请已提交");
         return "redirect:/leaves";
     }

@@ -1,6 +1,7 @@
 package com.example.studentms.controller;
 
 import com.example.studentms.model.AppUser;
+import com.example.studentms.model.Student;
 import com.example.studentms.model.UserRole;
 import com.example.studentms.service.CourseService;
 import com.example.studentms.service.GradeService;
@@ -16,6 +17,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 
 @Controller
 public class GradeController {
@@ -34,9 +36,10 @@ public class GradeController {
     public String grades(HttpSession session, Model model) {
         AppUser currentUser = (AppUser) session.getAttribute("loginUser");
         if (currentUser.getRole() == UserRole.STUDENT) {
-            Long studentId = studentService.findByUserId(currentUser.getId()).getId();
-            model.addAttribute("grades", gradeService.findGradesByStudent(studentId));
-            model.addAttribute("myGpa", gradeService.calculateStudentAverageGpa(studentId));
+            Student student = studentService.findOrCreateByUserId(currentUser.getId());
+            Long studentId = student == null ? null : student.getId();
+            model.addAttribute("grades", studentId == null ? List.of() : gradeService.findGradesByStudent(studentId));
+            model.addAttribute("myGpa", studentId == null ? 0.0 : gradeService.calculateStudentAverageGpa(studentId));
         } else {
             model.addAttribute("grades", gradeService.findAllGrades());
             model.addAttribute("ranking", gradeService.buildRanking());
@@ -65,9 +68,10 @@ public class GradeController {
     @GetMapping("/grades/export")
     public void export(HttpSession session, HttpServletResponse response) throws IOException {
         AppUser currentUser = (AppUser) session.getAttribute("loginUser");
-        Long studentId = currentUser.getRole() == UserRole.STUDENT
-                ? studentService.findByUserId(currentUser.getId()).getId()
+        Student student = currentUser.getRole() == UserRole.STUDENT
+                ? studentService.findOrCreateByUserId(currentUser.getId())
                 : null;
+        Long studentId = student == null ? null : student.getId();
 
         response.setCharacterEncoding(StandardCharsets.UTF_8.name());
         response.setContentType("application/vnd.ms-excel");
