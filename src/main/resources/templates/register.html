@@ -32,6 +32,12 @@
                 </div>
 
                 <div class="form-item">
+                    <label for="phone">手机号</label>
+                    <input id="phone" type="text" th:field="*{phone}" placeholder="请输入手机号">
+                    <p class="field-error" th:if="${#fields.hasErrors('phone')}" th:errors="*{phone}"></p>
+                </div>
+
+                <div class="form-item">
                     <label for="password">密码</label>
                     <input id="password" type="password" th:field="*{password}" placeholder="请输入密码">
                     <p class="field-error" th:if="${#fields.hasErrors('password')}" th:errors="*{password}"></p>

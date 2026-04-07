@@ -95,7 +95,7 @@ public class AuthService {
         AppUser user = new AppUser();
         user.setFullName(form.getFullName());
         user.setUsername(form.getUsername());
-        user.setPhone(form.getPhone());
+        user.setPhone(form.getPhone() == null ? "" : form.getPhone().trim());
         user.setRole(UserRole.STUDENT);
         user.setEnabled(Boolean.TRUE);
         user.setPassword(passwordEncoder.encode(form.getPassword()));
@@ -107,7 +107,8 @@ public class AuthService {
         student.setAge(18);
         student.setGender("男");
         student.setClassroom("待分班");
-        student.setPhone(form.getPhone() == null ? "" : form.getPhone());
+        String phone = form.getPhone() == null ? "" : form.getPhone().trim();
+        student.setPhone(phone.isBlank() ? "未填写" : phone);
         student.setMajor("待分配专业");
         student.setEnrollmentDate(LocalDate.now());
         student.setCurrentStatus("在读");
