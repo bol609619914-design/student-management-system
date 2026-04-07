@@ -1,8 +1,10 @@
 package com.example.studentms.service;
 
 import com.example.studentms.model.Announcement;
+import com.example.studentms.model.AppUser;
 import com.example.studentms.model.Course;
 import com.example.studentms.model.Enrollment;
+import com.example.studentms.model.GradeRecord;
 import com.example.studentms.model.LeaveRequest;
 import com.example.studentms.model.Student;
 import org.springframework.stereotype.Service;
@@ -49,6 +51,54 @@ public class DashboardService {
         return stats;
     }
 
+    public Map<String, Object> buildStudentDashboard(AppUser currentUser, Student student) {
+        Map<String, Object> dashboard = new HashMap<>();
+        List<Enrollment> myEnrollments = student == null ? List.of() : courseService.findEnrollmentsByStudent(student.getId());
+        List<GradeRecord> myGrades = student == null ? List.of() : gradeService.findGradesByStudent(student.getId());
+        List<LeaveRequest> myLeaves = student == null ? List.of() : leaveService.findStudentLeaves(student.getId());
+
+        dashboard.put("selectedCourseCount", myEnrollments.size());
+        dashboard.put("avgGpa", student == null ? 0.0 : gradeService.calculateStudentAverageGpa(student.getId()));
+        dashboard.put("leaveCount", myLeaves.size());
+        dashboard.put("recentAnnouncements", recentAnnouncements());
+        dashboard.put("myCourses", myEnrollments.stream().limit(5).toList());
+        dashboard.put("myGrades", myGrades.stream().limit(5).toList());
+        dashboard.put("myLeaves", myLeaves.stream().limit(4).toList());
+        dashboard.put("currentStatus", student == null ? "未绑定学籍" : safeText(student.getCurrentStatus(), "未绑定学籍"));
+        dashboard.put("major", student == null ? "未填写" : safeText(student.getMajor(), "未填写"));
+        dashboard.put("classroom", student == null ? "未分班" : safeText(student.getClassroom(), "未分班"));
+        dashboard.put("welcomeName", currentUser.getFullName());
+        return dashboard;
+    }
+
+    public Map<String, Object> buildTeacherDashboard(AppUser currentUser) {
+        Map<String, Object> dashboard = new HashMap<>();
+        List<Course> myCourses = courseService.findCoursesForTeacher(currentUser.getId());
+        List<Enrollment> allEnrollments = courseService.findAllEnrollments();
+        List<GradeRecord> allGrades = gradeService.findAllGrades();
+        List<Long> myCourseIds = myCourses.stream().map(Course::getId).toList();
+        long studentCount = allEnrollments.stream()
+                .filter(item -> myCourseIds.contains(item.getCourse().getId()))
+                .map(item -> item.getStudent().getId())
+                .distinct()
+                .count();
+        long gradedCount = allGrades.stream()
+                .filter(item -> myCourseIds.contains(item.getEnrollment().getCourse().getId()))
+                .count();
+        Map<String, Integer> teachingLoad = buildTeacherWeekLoad(myCourses);
+
+        dashboard.put("welcomeName", currentUser.getFullName());
+        dashboard.put("courseCount", myCourses.size());
+        dashboard.put("studentCount", studentCount);
+        dashboard.put("gradedCount", gradedCount);
+        dashboard.put("myCourses", myCourses.stream().limit(5).toList());
+        dashboard.put("recentAnnouncements", recentAnnouncements());
+        dashboard.put("recentLeaves", recentLeaves());
+        dashboard.put("teachingLoad", teachingLoad);
+        dashboard.put("maxTeachingLoad", maxValue(teachingLoad));
+        return dashboard;
+    }
+
     public List<Map<String, Object>> ranking() {
         return gradeService.buildRanking();
     }
@@ -63,12 +113,7 @@ public class DashboardService {
     }
 
     public Map<String, Integer> buildWeekdayCourseLoad() {
-        Map<String, Integer> map = new LinkedHashMap<>();
-        map.put("周一", 0);
-        map.put("周二", 0);
-        map.put("周三", 0);
-        map.put("周四", 0);
-        map.put("周五", 0);
+        Map<String, Integer> map = defaultWeekMap();
         for (Course course : courseService.findAllCourses()) {
             map.computeIfPresent(course.getWeekDay(), (key, value) -> value + 1);
         }
@@ -76,10 +121,7 @@ public class DashboardService {
     }
 
     public int maxWeekdayCourseLoad() {
-        return buildWeekdayCourseLoad().values().stream()
-                .mapToInt(Integer::intValue)
-                .max()
-                .orElse(1);
+        return maxValue(buildWeekdayCourseLoad());
     }
 
     public List<Map<String, Object>> topCourses() {
@@ -106,6 +148,32 @@ public class DashboardService {
 
     public List<LeaveRequest> recentLeaves() {
         return leaveService.findAll().stream().limit(5).toList();
+    }
+
+    private Map<String, Integer> buildTeacherWeekLoad(List<Course> courses) {
+        Map<String, Integer> map = defaultWeekMap();
+        for (Course course : courses) {
+            map.computeIfPresent(course.getWeekDay(), (key, value) -> value + 1);
+        }
+        return map;
+    }
+
+    private Map<String, Integer> defaultWeekMap() {
+        Map<String, Integer> map = new LinkedHashMap<>();
+        map.put("周一", 0);
+        map.put("周二", 0);
+        map.put("周三", 0);
+        map.put("周四", 0);
+        map.put("周五", 0);
+        return map;
+    }
+
+    private int maxValue(Map<String, Integer> map) {
+        return map.values().stream().mapToInt(Integer::intValue).max().orElse(1);
+    }
+
+    private String safeText(String value, String fallback) {
+        return value == null || value.isBlank() ? fallback : value;
     }
 
     private double averageGpa() {

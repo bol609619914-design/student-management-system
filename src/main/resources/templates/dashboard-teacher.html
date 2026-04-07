@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>教学首页</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<div class="admin-shell">
+    <div th:replace="~{fragments :: sidebar('dashboard')}"></div>
+    <main class="main-content">
+        <section class="page-header">
+            <div>
+                <p class="eyebrow">Teaching Workspace</p>
+                <h1>教学首页</h1>
+                <p>教师首页聚焦授课课程、学生覆盖、成绩录入与公告动态，不展示管理员专属的全局运营统计。</p>
+            </div>
+            <a class="secondary-btn" th:href="@{/profile}">进入个人中心</a>
+        </section>
+
+        <section class="dashboard-hero">
+            <div class="dashboard-hero-copy">
+                <span class="hero-badge">教师视角</span>
+                <h2 th:text="|欢迎回来，${teacherDashboard.welcomeName}|">欢迎回来</h2>
+                <p>当前首页仅保留与你教学工作直接相关的课程、学生和成绩信息，避免展示管理员专属的系统级总览。</p>
+                <div class="hero-tags">
+                    <span>授课课程</span>
+                    <span>学生覆盖</span>
+                    <span>成绩录入</span>
+                    <span>公告动态</span>
+                </div>
+            </div>
+            <div class="hero-insight-card">
+                <p>当前教学概况</p>
+                <strong th:text="|管理 ${teacherDashboard.courseCount} 门课程|">管理 0 门课程</strong>
+                <div class="hero-mini-metrics">
+                    <div>
+                        <span>覆盖学生</span>
+                        <b th:text="${teacherDashboard.studentCount}">0</b>
+                    </div>
+                    <div>
+                        <span>已录成绩</span>
+                        <b th:text="${teacherDashboard.gradedCount}">0</b>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="stats-grid">
+            <article class="stat-card">
+                <span>授课课程数</span>
+                <strong th:text="${teacherDashboard.courseCount}">0</strong>
+            </article>
+            <article class="stat-card">
+                <span>覆盖学生数</span>
+                <strong th:text="${teacherDashboard.studentCount}">0</strong>
+            </article>
+            <article class="stat-card">
+                <span>已录入成绩</span>
+                <strong th:text="${teacherDashboard.gradedCount}">0</strong>
+            </article>
+        </section>
+
+        <section class="dashboard-grid">
+            <article class="panel">
+                <div class="panel-head">
+                    <div>
+                        <h2>我的授课安排</h2>
+                        <p>展示当前教师所负责的课程与上课时间。</p>
+                    </div>
+                    <a class="link-btn" th:href="@{/courses}">进入课程管理</a>
+                </div>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                        <tr>
+                            <th>课程编号</th>
+                            <th>课程名称</th>
+                            <th>时间</th>
+                            <th>教室</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="course : ${teacherDashboard.myCourses}">
+                            <td th:text="${course.courseCode}">CS301</td>
+                            <td th:text="${course.courseName}">Java Web 开发</td>
+                            <td th:text="|${course.weekDay} 第${course.startSection}-${course.endSection}节|">周一 第1-2节</td>
+                            <td th:text="${course.classroom}">A301</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </article>
+
+            <article class="panel">
+                <div class="panel-head">
+                    <div>
+                        <h2>每周教学负载</h2>
+                        <p>按工作日展示当前教师的授课分布情况。</p>
+                    </div>
+                    <span class="tag">教师视图</span>
+                </div>
+                <div class="bar-chart">
+                    <div class="bar-item" th:each="item : ${teacherDashboard.teachingLoad}">
+                        <div class="bar-label-row">
+                            <span th:text="${item.key}">周一</span>
+                            <strong th:text="|${item.value} 门|">0 门</strong>
+                        </div>
+                        <div class="bar-track">
+                            <div class="bar-fill" th:style="'width:' + (${teacherDashboard.maxTeachingLoad == 0 ? 0 : item.value * 100 / teacherDashboard.maxTeachingLoad}) + '%'"></div>
+                        </div>
+                    </div>
+                </div>
+            </article>
+        </section>
+
+        <section class="list-grid">
+            <article class="panel">
+                <div class="panel-head">
+                    <div>
+                        <h2>近期公告</h2>
+                        <p>查看最新教学与考试相关通知。</p>
+                    </div>
+                    <a class="link-btn" th:href="@{/announcements}">查看全部</a>
+                </div>
+                <div class="timeline-list">
+                    <div class="timeline-item" th:each="announcement : ${teacherDashboard.recentAnnouncements}">
+                        <div class="timeline-marker"></div>
+                        <div class="timeline-content">
+                            <div class="timeline-top">
+                                <strong th:text="${announcement.title}">考试安排通知</strong>
+                                <span class="tag" th:if="${announcement.pinned}">置顶</span>
+                            </div>
+                            <p th:text="${announcement.content}">公告内容</p>
+                        </div>
+                    </div>
+                </div>
+            </article>
+
+            <article class="panel">
+                <div class="panel-head">
+                    <div>
+                        <h2>请假审批动态</h2>
+                        <p>教师可在这里快速查看学生请假动态。</p>
+                    </div>
+                    <a class="link-btn" th:href="@{/leaves}">进入审批</a>
+                </div>
+                <div class="timeline-list">
+                    <div class="timeline-item" th:each="leave : ${teacherDashboard.recentLeaves}">
+                        <div class="timeline-marker soft"></div>
+                        <div class="timeline-content">
+                            <div class="timeline-top">
+                                <strong th:text="${leave.student != null ? leave.student.name : '未关联学生'}">李四</strong>
+                                <span class="status-chip" th:text="${leave.status != null ? leave.status.label : '待处理'}">待处理</span>
+                            </div>
+                            <p th:text="${leave.reason}">病假申请</p>
+                        </div>
+                    </div>
+                </div>
+            </article>
+        </section>
+    </main>
+</div>
+</body>
+</html>

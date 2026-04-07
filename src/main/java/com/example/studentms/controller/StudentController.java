@@ -31,12 +31,14 @@ public class StudentController {
     @GetMapping("/students")
     public String listStudents(HttpSession session, Model model) {
         AppUser currentUser = (AppUser) session.getAttribute("loginUser");
-        List<Student> students = currentUser.getRole() == UserRole.STUDENT
-                ? List.of(studentService.findByUserId(currentUser.getId()))
-                : studentService.findAll();
+        boolean studentView = currentUser.getRole() == UserRole.STUDENT;
+        Student self = studentView ? studentService.findByUserId(currentUser.getId()) : null;
+        List<Student> students = studentView ? List.of(self) : studentService.findAll();
         model.addAttribute("students", students.stream().filter(item -> item != null).toList());
-        model.addAttribute("studentCount", studentService.count());
-        model.addAttribute("averageAge", String.format("%.1f", studentService.averageAge()));
+        model.addAttribute("studentCount", studentView ? (self == null ? 0 : 1) : studentService.count());
+        model.addAttribute("averageAge", studentView
+                ? (self == null || self.getAge() == null ? "-" : String.valueOf(self.getAge()))
+                : String.format("%.1f", studentService.averageAge()));
         return "students";
     }
 
