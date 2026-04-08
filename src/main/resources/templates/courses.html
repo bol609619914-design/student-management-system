@@ -1,35 +1,121 @@
 <!DOCTYPE html>
 <html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>课程与选课</title><link rel="stylesheet" th:href="@{/css/style.css}"></head>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>课程与选课</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
 <body>
 <div class="admin-shell">
     <div th:replace="~{fragments :: sidebar('courses')}"></div>
     <main class="main-content">
-        <section class="page-header"><div><p class="eyebrow">Academic Affairs</p><h1>课程档案与选课管理</h1><p>支持课程库维护、排课冲突校验和学生在线选课。</p></div></section>
+        <section class="page-header">
+            <div>
+                <p class="eyebrow">教务管理模块</p>
+                <h1>课程档案与选课管理</h1>
+                <p>支持课程库维护、排课冲突校验和学生在线选课。</p>
+            </div>
+        </section>
+
         <div class="message success" th:if="${successMessage}" th:text="${successMessage}"></div>
         <div class="message error" th:if="${errorMessage}" th:text="${errorMessage}"></div>
+
         <section class="panel form-panel" th:if="${currentUser.role.name() != 'STUDENT'}">
-            <form th:action="@{/courses}" method="post">
-                <div class="form-grid">
-                    <div class="form-item"><label>课程编号</label><input name="courseCode" type="text"></div>
-                    <div class="form-item"><label>课程名称</label><input name="courseName" type="text"></div>
-                    <div class="form-item"><label>学分</label><input name="credit" type="number"></div>
-                    <div class="form-item"><label>学时</label><input name="classHours" type="number"></div>
-                    <div class="form-item"><label>课程性质</label><select name="nature"><option th:each="nature : ${natures}" th:value="${nature}" th:text="${nature.label}"></option></select></div>
-                    <div class="form-item"><label>授课教师</label><select name="teacherId"><option th:each="teacher : ${teachers}" th:value="${teacher.id}" th:text="${teacher.fullName}"></option></select></div>
-                    <div class="form-item"><label>教室</label><input name="classroom" type="text"></div>
-                    <div class="form-item"><label>星期</label><select name="weekDay"><option>周一</option><option>周二</option><option>周三</option><option>周四</option><option>周五</option></select></div>
-                    <div class="form-item"><label>开始节次</label><input name="startSection" type="number"></div>
-                    <div class="form-item"><label>结束节次</label><input name="endSection" type="number"></div>
-                    <div class="form-item"><label>容量</label><input name="capacity" type="number"></div>
-                    <div class="form-item full-width"><label>课程说明</label><input name="description" type="text"></div>
+            <div class="panel-head">
+                <div>
+                    <h2 th:text="${editingCourse != null ? '编辑课程' : '新增课程'}">新增课程</h2>
+                    <p>教师和管理员可以维护课程信息，系统会自动校验时间与教室冲突。</p>
                 </div>
-                <div class="form-actions"><button class="primary-btn" type="submit">保存课程</button></div>
+            </div>
+            <form th:action="@{/courses}" method="post">
+                <input type="hidden" name="id" th:value="${editingCourse != null ? editingCourse.id : ''}">
+                <div class="form-grid">
+                    <div class="form-item">
+                        <label>课程编号</label>
+                        <input name="courseCode" type="text" th:value="${editingCourse != null ? editingCourse.courseCode : ''}">
+                    </div>
+                    <div class="form-item">
+                        <label>课程名称</label>
+                        <input name="courseName" type="text" th:value="${editingCourse != null ? editingCourse.courseName : ''}">
+                    </div>
+                    <div class="form-item">
+                        <label>学分</label>
+                        <input name="credit" type="number" th:value="${editingCourse != null ? editingCourse.credit : ''}">
+                    </div>
+                    <div class="form-item">
+                        <label>学时</label>
+                        <input name="classHours" type="number" th:value="${editingCourse != null ? editingCourse.classHours : ''}">
+                    </div>
+                    <div class="form-item">
+                        <label>课程性质</label>
+                        <select name="nature">
+                            <option th:each="nature : ${natures}"
+                                    th:value="${nature}"
+                                    th:text="${nature.label}"
+                                    th:selected="${editingCourse != null and nature == editingCourse.nature}"></option>
+                        </select>
+                    </div>
+                    <div class="form-item">
+                        <label>授课教师</label>
+                        <select name="teacherId">
+                            <option th:each="teacher : ${teachers}"
+                                    th:value="${teacher.id}"
+                                    th:text="${teacher.fullName}"
+                                    th:selected="${editingCourse != null and editingCourse.teacher != null and teacher.id == editingCourse.teacher.id}"></option>
+                        </select>
+                    </div>
+                    <div class="form-item">
+                        <label>教室</label>
+                        <input name="classroom" type="text" th:value="${editingCourse != null ? editingCourse.classroom : ''}">
+                    </div>
+                    <div class="form-item">
+                        <label>星期</label>
+                        <select name="weekDay">
+                            <option th:selected="${editingCourse == null or editingCourse.weekDay == '周一'}">周一</option>
+                            <option th:selected="${editingCourse != null and editingCourse.weekDay == '周二'}">周二</option>
+                            <option th:selected="${editingCourse != null and editingCourse.weekDay == '周三'}">周三</option>
+                            <option th:selected="${editingCourse != null and editingCourse.weekDay == '周四'}">周四</option>
+                            <option th:selected="${editingCourse != null and editingCourse.weekDay == '周五'}">周五</option>
+                        </select>
+                    </div>
+                    <div class="form-item">
+                        <label>开始节次</label>
+                        <input name="startSection" type="number" th:value="${editingCourse != null ? editingCourse.startSection : ''}">
+                    </div>
+                    <div class="form-item">
+                        <label>结束节次</label>
+                        <input name="endSection" type="number" th:value="${editingCourse != null ? editingCourse.endSection : ''}">
+                    </div>
+                    <div class="form-item">
+                        <label>容量</label>
+                        <input name="capacity" type="number" th:value="${editingCourse != null ? editingCourse.capacity : ''}">
+                    </div>
+                    <div class="form-item full-width">
+                        <label>课程说明</label>
+                        <input name="description" type="text" th:value="${editingCourse != null ? editingCourse.description : ''}">
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button class="primary-btn" type="submit" th:text="${editingCourse != null ? '保存修改' : '保存课程'}">保存课程</button>
+                    <a class="secondary-btn" th:if="${editingCourse != null}" th:href="@{/courses}">取消编辑</a>
+                </div>
             </form>
         </section>
+
         <section class="panel">
             <table>
-                <thead><tr><th>编号</th><th>课程</th><th>教师</th><th>时间</th><th>教室</th><th>性质</th><th>操作</th></tr></thead>
+                <thead>
+                <tr>
+                    <th>编号</th>
+                    <th>课程</th>
+                    <th>教师</th>
+                    <th>时间</th>
+                    <th>教室</th>
+                    <th>性质</th>
+                    <th>操作</th>
+                </tr>
+                </thead>
                 <tbody>
                 <tr th:each="course : ${courses}">
                     <td th:text="${course.courseCode}">CS301</td>
@@ -40,21 +126,35 @@
                     <td th:text="${course.nature.label}">必修</td>
                     <td class="actions">
                         <a class="primary-btn" th:if="${currentUser.role.name() == 'STUDENT'}" th:href="@{'/courses/' + ${course.id} + '/select'}">立即选课</a>
+                        <a class="secondary-btn" th:if="${currentUser.role.name() != 'STUDENT'}" th:href="@{'/courses?editId=' + ${course.id}}">编辑</a>
                         <a class="danger-btn" th:if="${currentUser.role.name() != 'STUDENT'}" th:href="@{'/courses/' + ${course.id} + '/delete'}">删除</a>
                     </td>
                 </tr>
                 </tbody>
             </table>
         </section>
+
         <section class="panel" th:if="${currentUser.role.name() == 'STUDENT'}">
-            <div class="panel-head"><h2>我的课表</h2><p>已选课程自动生成课表</p></div>
+            <div class="panel-head">
+                <div>
+                    <h2>我的课表</h2>
+                    <p>已选课程自动生成课表。</p>
+                </div>
+            </div>
             <table>
-                <thead><tr><th>课程</th><th>教师</th><th>上课时间</th><th>教室</th></tr></thead>
+                <thead>
+                <tr>
+                    <th>课程</th>
+                    <th>教师</th>
+                    <th>上课时间</th>
+                    <th>教室</th>
+                </tr>
+                </thead>
                 <tbody>
                 <tr th:each="enroll : ${myCourses}">
                     <td th:text="${enroll.course.courseName}">Java Web 开发</td>
-                    <td th:text="${enroll.course.teacher.fullName}">张老师</td>
-                    <td th:text="${enroll.course.weekDay + ' 第' + enroll.course.startSection + '-' + enroll.course.endSection + '节'}">周一</td>
+                    <td th:text="${enroll.course.teacher != null ? enroll.course.teacher.fullName : '未安排'}">张老师</td>
+                    <td th:text="${enroll.course.weekDay + ' 第' + enroll.course.startSection + '-' + enroll.course.endSection + '节'}">周一 第1-2节</td>
                     <td th:text="${enroll.course.classroom}">A301</td>
                 </tr>
                 </tbody>

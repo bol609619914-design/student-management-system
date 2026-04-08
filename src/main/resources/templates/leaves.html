@@ -1,41 +1,179 @@
 <!DOCTYPE html>
 <html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>请假审批</title><link rel="stylesheet" th:href="@{/css/style.css}"></head>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>请假审批</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
 <body>
 <div class="admin-shell">
     <div th:replace="~{fragments :: sidebar('leaves')}"></div>
     <main class="main-content">
-        <section class="page-header"><div><p class="eyebrow">Campus Services</p><h1>考勤请假与审批</h1><p>学生在线提交请假申请，教师或管理员审批后自动标记考勤关联状态。</p></div></section>
+        <section class="page-header">
+            <div>
+                <p class="eyebrow">校园服务模块</p>
+                <h1>考勤请假与审批</h1>
+                <p>学生在线提交请假申请，教师或管理员审批后自动标记考勤关联状态。</p>
+            </div>
+        </section>
+
         <div class="message success" th:if="${successMessage}" th:text="${successMessage}"></div>
+        <div class="message error" th:if="${errorMessage}" th:text="${errorMessage}"></div>
+
         <section class="panel form-panel" th:if="${currentUser.role.name() == 'STUDENT'}">
             <form th:action="@{/leaves}" method="post">
                 <div class="form-grid">
-                    <div class="form-item full-width"><label>请假原因</label><input name="reason" type="text"></div>
-                    <div class="form-item"><label>开始日期</label><input name="startDate" type="date"></div>
-                    <div class="form-item"><label>结束日期</label><input name="endDate" type="date"></div>
+                    <div class="form-item full-width">
+                        <label>请假原因</label>
+                        <input name="reason" type="text">
+                    </div>
+                    <div class="form-item">
+                        <label>开始日期</label>
+                        <input name="startDate" type="date">
+                    </div>
+                    <div class="form-item">
+                        <label>结束日期</label>
+                        <input name="endDate" type="date">
+                    </div>
                 </div>
-                <div class="form-actions"><button class="primary-btn" type="submit">提交申请</button></div>
+                <div class="form-actions">
+                    <button class="primary-btn" type="submit">提交申请</button>
+                </div>
             </form>
         </section>
-        <section class="panel">
-            <table>
-                <thead><tr><th>学生</th><th>时间</th><th>原因</th><th>状态</th><th>考勤关联</th><th>操作</th></tr></thead>
-                <tbody>
-                <tr th:each="item : ${leaveRequests}">
-                    <td th:text="${item.student.name}">王小明</td>
-                    <td th:text="${item.startDate + ' 至 ' + item.endDate}">2026-04-05</td>
-                    <td th:text="${item.reason}">事假</td>
-                    <td th:text="${item.status.label}">待审批</td>
-                    <td th:text="${item.attendanceLinked ? '已关联' : '未关联'}">已关联</td>
-                    <td class="actions" th:if="${currentUser.role.name() != 'STUDENT'}">
-                        <a class="link-btn" th:href="@{'/leaves/' + ${item.id} + '/approve?approved=true&comment=审批通过'}">通过</a>
-                        <a class="danger-btn" th:href="@{'/leaves/' + ${item.id} + '/approve?approved=false&comment=审批驳回'}">驳回</a>
-                    </td>
-                    <td th:if="${currentUser.role.name() == 'STUDENT'}">等待处理</td>
-                </tr>
-                </tbody>
-            </table>
-        </section>
+
+        <th:block th:if="${currentUser.role.name() == 'STUDENT'}">
+            <section class="panel">
+                <div class="section-head">
+                    <div>
+                        <p class="eyebrow">My Leave Records</p>
+                        <h2>我的请假记录</h2>
+                    </div>
+                </div>
+
+                <div class="empty-state" th:if="${#lists.isEmpty(leaveRequests)}">
+                    当前还没有请假记录。
+                </div>
+
+                <table th:if="${!#lists.isEmpty(leaveRequests)}">
+                    <thead>
+                    <tr>
+                        <th>时间</th>
+                        <th>原因</th>
+                        <th>状态</th>
+                        <th>考勤关联</th>
+                        <th>审批信息</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="item : ${leaveRequests}"
+                        th:classappend="${item.status.name() != 'PENDING'} ? ' muted-row'">
+                        <td th:text="${item.startDate + ' 至 ' + item.endDate}">2026-04-05 至 2026-04-06</td>
+                        <td th:text="${item.reason}">事假</td>
+                        <td>
+                            <span class="status-chip"
+                                  th:classappend="${item.status.name() == 'APPROVED'} ? ' chip-approved' : (${item.status.name() == 'REJECTED'} ? ' chip-rejected' : ' chip-pending')"
+                                  th:text="${item.status.label}">待审批</span>
+                        </td>
+                        <td th:text="${item.attendanceLinked ? '已关联' : '未关联'}">未关联</td>
+                        <td>
+                            <div th:if="${item.status.name() == 'PENDING'}">待审批</div>
+                            <div th:if="${item.status.name() != 'PENDING'}">
+                                <div th:text="${item.approvalComment != null and !#strings.isEmpty(item.approvalComment) ? item.approvalComment : '无审批意见'}">审批通过</div>
+                                <small th:text="${item.approver != null ? '审批人：' + item.approver.fullName : '审批人：未记录'}">审批人：张老师</small>
+                                <small th:if="${item.reviewedAt != null}" th:text="${' · 审批时间：' + #temporals.format(item.reviewedAt, 'yyyy-MM-dd HH:mm')}"> · 审批时间：2026-04-08 10:00</small>
+                            </div>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </section>
+        </th:block>
+
+        <th:block th:if="${currentUser.role.name() != 'STUDENT'}">
+            <section class="panel">
+                <div class="section-head">
+                    <div>
+                        <p class="eyebrow">待审批申请</p>
+                        <h2>待审批申请</h2>
+                    </div>
+                </div>
+
+                <div class="empty-state" th:if="${#lists.isEmpty(pendingLeaveRequests)}">
+                    当前没有待审批的请假申请。
+                </div>
+
+                <table th:if="${!#lists.isEmpty(pendingLeaveRequests)}">
+                    <thead>
+                    <tr>
+                        <th>学生</th>
+                        <th>时间</th>
+                        <th>原因</th>
+                        <th>状态</th>
+                        <th>考勤关联</th>
+                        <th>操作</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="item : ${pendingLeaveRequests}">
+                        <td th:text="${item.student.name}">王小明</td>
+                        <td th:text="${item.startDate + ' 至 ' + item.endDate}">2026-04-05 至 2026-04-06</td>
+                        <td th:text="${item.reason}">事假</td>
+                        <td th:text="${item.status.label}">待审批</td>
+                        <td th:text="${item.attendanceLinked ? '已关联' : '未关联'}">未关联</td>
+                        <td class="actions">
+                            <form class="approval-form" th:action="@{'/leaves/' + ${item.id} + '/approve'}" method="post">
+                                <input class="approval-input" type="text" name="comment" placeholder="填写审批意见">
+                                <button class="link-btn" type="submit" name="approved" value="true">通过</button>
+                                <button class="danger-btn" type="submit" name="approved" value="false">驳回</button>
+                            </form>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <section class="panel">
+                <div class="section-head">
+                    <div>
+                        <p class="eyebrow">已处理记录</p>
+                        <h2>已处理记录</h2>
+                    </div>
+                </div>
+
+                <div class="empty-state" th:if="${#lists.isEmpty(processedLeaveRequests)}">
+                    当前还没有已处理记录。
+                </div>
+
+                <table th:if="${!#lists.isEmpty(processedLeaveRequests)}">
+                    <thead>
+                    <tr>
+                        <th>学生</th>
+                        <th>时间</th>
+                        <th>原因</th>
+                        <th>状态</th>
+                        <th>考勤关联</th>
+                        <th>审批信息</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="item : ${processedLeaveRequests}">
+                        <td th:text="${item.student.name}">王小明</td>
+                        <td th:text="${item.startDate + ' 至 ' + item.endDate}">2026-04-05 至 2026-04-06</td>
+                        <td th:text="${item.reason}">事假</td>
+                        <td th:text="${item.status.label}">已同意</td>
+                        <td th:text="${item.attendanceLinked ? '已关联' : '未关联'}">已关联</td>
+                        <td>
+                            <div th:text="${item.approvalComment ?: '无审批意见'}">审批通过</div>
+                            <small th:text="${item.approver != null ? '审批人：' + item.approver.fullName : '审批人：未记录'}">审批人：张老师</small>
+                            <small th:if="${item.reviewedAt != null}" th:text="${' · 审批时间：' + #temporals.format(item.reviewedAt, 'yyyy-MM-dd HH:mm')}"> · 审批时间：2026-04-08 10:00</small>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </section>
+        </th:block>
     </main>
 </div>
 </body>

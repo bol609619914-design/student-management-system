@@ -58,7 +58,7 @@ public class StudentService {
         student.setAge(18);
         student.setGender("男");
         student.setClassroom("待分班");
-        student.setPhone(user.getPhone() == null ? "" : user.getPhone());
+        student.setPhone(user.getPhone() == null || user.getPhone().isBlank() ? "未填写" : user.getPhone());
         student.setMajor("待分配专业");
         student.setEnrollmentDate(LocalDate.now());
         student.setCurrentStatus("在读");

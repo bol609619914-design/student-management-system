@@ -1,30 +1,63 @@
 <!DOCTYPE html>
 <html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>成绩评价</title><link rel="stylesheet" th:href="@{/css/style.css}"></head>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>成绩评价</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
 <body>
 <div class="admin-shell">
     <div th:replace="~{fragments :: sidebar('grades')}"></div>
     <main class="main-content">
-        <section class="page-header"><div><p class="eyebrow">Grading & Evaluation</p><h1>成绩与评价量化</h1><p>支持平时、期中、期末加权汇总，自动计算 GPA 与排名。</p></div><a class="secondary-btn" th:href="@{/grades/export}">导出成绩单</a></section>
+        <section class="page-header">
+            <div>
+                <p class="eyebrow">成绩评价模块</p>
+                <h1>成绩与评价量化</h1>
+                <p>支持平时、期中、期末加权汇总，并自动计算 GPA 与排名。</p>
+            </div>
+            <a class="secondary-btn" th:href="@{/grades/export}">导出成绩单</a>
+        </section>
+
         <div class="message success" th:if="${successMessage}" th:text="${successMessage}"></div>
+
         <section class="panel form-panel" th:if="${currentUser.role.name() != 'STUDENT'}">
             <form th:action="@{/grades}" method="post">
                 <div class="form-grid">
-                    <div class="form-item"><label>选课记录</label><select name="enrollmentId"><option th:each="enroll : ${allEnrollments}" th:value="${enroll.id}" th:text="${enroll.student.name + ' - ' + enroll.course.courseName}"></option></select></div>
+                    <div class="form-item">
+                        <label>选课记录</label>
+                        <select name="enrollmentId">
+                            <option th:each="enroll : ${allEnrollments}" th:value="${enroll.id}" th:text="${enroll.student.name + ' - ' + enroll.course.courseName}"></option>
+                        </select>
+                    </div>
                     <div class="form-item"><label>平时成绩</label><input name="dailyScore" type="number" step="0.01"></div>
                     <div class="form-item"><label>期中成绩</label><input name="midtermScore" type="number" step="0.01"></div>
                     <div class="form-item"><label>期末成绩</label><input name="finalScore" type="number" step="0.01"></div>
                 </div>
-                <div class="form-actions"><button class="primary-btn" type="submit">录入成绩</button></div>
+                <div class="form-actions">
+                    <button class="primary-btn" type="submit">录入成绩</button>
+                </div>
             </form>
         </section>
+
         <section class="panel" th:if="${currentUser.role.name() == 'STUDENT'}">
             <h2>我的 GPA</h2>
             <div class="large-number" th:text="${myGpa}">0</div>
         </section>
+
         <section class="panel">
             <table>
-                <thead><tr><th>学生</th><th>课程</th><th>平时</th><th>期中</th><th>期末</th><th>总评</th><th>GPA</th></tr></thead>
+                <thead>
+                <tr>
+                    <th>学生</th>
+                    <th>课程</th>
+                    <th>平时</th>
+                    <th>期中</th>
+                    <th>期末</th>
+                    <th>总评</th>
+                    <th>GPA</th>
+                </tr>
+                </thead>
                 <tbody>
                 <tr th:each="item : ${currentUser.role.name() == 'STUDENT' ? grades : allGrades}">
                     <td th:text="${item.enrollment.student.name}">王小明</td>
@@ -38,10 +71,22 @@
                 </tbody>
             </table>
         </section>
+
         <section class="panel" th:if="${currentUser.role.name() != 'STUDENT'}">
-            <div class="panel-head"><h2>班级排名</h2><p>按平均绩点自动生成</p></div>
+            <div class="panel-head">
+                <div>
+                    <h2>班级排名</h2>
+                    <p>按平均绩点自动生成。</p>
+                </div>
+            </div>
             <table>
-                <thead><tr><th>排名</th><th>学生</th><th>GPA</th></tr></thead>
+                <thead>
+                <tr>
+                    <th>排名</th>
+                    <th>学生</th>
+                    <th>GPA</th>
+                </tr>
+                </thead>
                 <tbody>
                 <tr th:each="item : ${ranking}">
                     <td th:text="${item.rank}">1</td>

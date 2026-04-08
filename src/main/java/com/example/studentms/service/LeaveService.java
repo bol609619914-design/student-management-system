@@ -24,6 +24,14 @@ public class LeaveService {
         return leaveRequestRepository.findAllByOrderBySubmittedAtDesc();
     }
 
+    public List<LeaveRequest> findPending() {
+        return leaveRequestRepository.findByStatusOrderBySubmittedAtDesc(LeaveStatus.PENDING);
+    }
+
+    public List<LeaveRequest> findProcessed() {
+        return leaveRequestRepository.findByStatusNotOrderBySubmittedAtDesc(LeaveStatus.PENDING);
+    }
+
     public List<LeaveRequest> findStudentLeaves(Long studentId) {
         return leaveRequestRepository.findByStudentIdOrderBySubmittedAtDesc(studentId);
     }
@@ -45,6 +53,7 @@ public class LeaveService {
                 .orElseThrow(() -> new IllegalArgumentException("请假记录不存在"));
         request.setApprover(approver);
         request.setApprovalComment(comment);
+        request.setReviewedAt(LocalDateTime.now());
         request.setStatus(approved ? LeaveStatus.APPROVED : LeaveStatus.REJECTED);
         request.setAttendanceLinked(approved);
         leaveRequestRepository.save(request);

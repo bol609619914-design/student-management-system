@@ -41,6 +41,8 @@ public class LeaveRequest {
 
     private LocalDateTime submittedAt;
 
+    private LocalDateTime reviewedAt;
+
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "approver_id")
     private AppUser approver;
@@ -115,6 +117,14 @@ public class LeaveRequest {
 
     public void setSubmittedAt(LocalDateTime submittedAt) {
         this.submittedAt = submittedAt;
+    }
+
+    public LocalDateTime getReviewedAt() {
+        return reviewedAt;
+    }
+
+    public void setReviewedAt(LocalDateTime reviewedAt) {
+        this.reviewedAt = reviewedAt;
     }
 
     public AppUser getApprover() {

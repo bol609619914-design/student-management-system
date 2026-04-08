@@ -32,8 +32,8 @@ public class Student {
     private String name;
 
     @NotNull(message = "年龄不能为空")
-    @Min(value = 10, message = "年龄不能小于10岁")
-    @Max(value = 100, message = "年龄不能大于100岁")
+    @Min(value = 10, message = "年龄不能小于 10 岁")
+    @Max(value = 100, message = "年龄不能大于 100 岁")
     @Column(nullable = false)
     private Integer age;
 

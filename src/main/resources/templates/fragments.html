@@ -30,7 +30,7 @@
         <a th:classappend="${active == 'profile'} ? ' active'" th:href="@{/profile}">个人中心</a>
     </nav>
     <div class="sidebar-footer" th:if="${currentUser != null}">
-        <div class="avatar-mini" th:text="${#strings.substring(currentUser.fullName,0,1)}">我</div>
+        <div class="avatar-mini" th:text="${#strings.substring(currentUser.fullName,0,1)}">系</div>
         <div>
             <strong th:text="${currentUser.fullName}">系统用户</strong>
             <p th:text="${currentUser.role.label}">学生</p>

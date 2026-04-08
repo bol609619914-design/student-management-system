@@ -1,41 +1,153 @@
 <!DOCTYPE html>
 <html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>学籍信息</title><link rel="stylesheet" th:href="@{/css/style.css}"></head>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>学籍信息</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
 <body>
 <div class="admin-shell">
     <div th:replace="~{fragments :: sidebar('students')}"></div>
     <main class="main-content">
-        <section class="page-header">
-            <div><p class="eyebrow">Student Information System</p><h1>学籍信息数字化</h1><p>覆盖基础档案、照片、班级归属和学籍全生命周期管理。</p></div>
-            <a class="primary-btn" th:if="${currentUser.role.name() != 'STUDENT'}" th:href="@{/students/new}">新增学生</a>
+        <section class="page-header" th:if="${currentUser.role.name() != 'STUDENT'}">
+            <div>
+                <p class="eyebrow">Student Information System</p>
+                <h1>学籍信息数字化</h1>
+                <p>覆盖基础档案、照片、班级归属和学籍全生命周期管理。</p>
+            </div>
+            <a class="primary-btn" th:href="@{/students/new}">新增学生</a>
         </section>
+
+        <section class="page-header" th:if="${currentUser.role.name() == 'STUDENT'}">
+            <div>
+                <p class="eyebrow">My Student Profile</p>
+                <h1>我的学籍</h1>
+                <p>查看个人学籍档案、入学信息和异动记录。</p>
+            </div>
+        </section>
+
         <div class="message success" th:if="${successMessage}" th:text="${successMessage}"></div>
         <div class="message error" th:if="${errorMessage}" th:text="${errorMessage}"></div>
-        <section class="stats-grid">
-            <article class="stat-card"><span>学生总数</span><strong th:text="${studentCount}">0</strong></article>
-            <article class="stat-card"><span>平均年龄</span><strong th:text="${averageAge}">0</strong></article>
-            <article class="stat-card"><span>数据状态</span><strong>已同步</strong></article>
-        </section>
-        <section class="panel">
-            <table>
-                <thead><tr><th>学号</th><th>姓名</th><th>班级</th><th>专业</th><th>入学日期</th><th>状态</th><th>操作</th></tr></thead>
-                <tbody>
-                <tr th:each="student : ${students}">
-                    <td th:text="${student.studentNo}">20260001</td>
-                    <td th:text="${student.name}">王小明</td>
-                    <td th:text="${student.classroom}">计算机1班</td>
-                    <td th:text="${student.major}">计算机科学与技术</td>
-                    <td th:text="${student.enrollmentDate}">2026-09-01</td>
-                    <td th:text="${student.currentStatus}">在读</td>
-                    <td class="actions">
-                        <a class="link-btn" th:href="@{'/students/' + ${student.id} + '/status'}">异动历史</a>
-                        <a class="link-btn" th:if="${currentUser.role.name() != 'STUDENT'}" th:href="@{'/students/edit/' + ${student.id}}">编辑</a>
-                        <a class="danger-btn" th:if="${currentUser.role.name() != 'STUDENT'}" th:href="@{'/students/delete/' + ${student.id}}">删除</a>
-                    </td>
-                </tr>
-                </tbody>
-            </table>
-        </section>
+
+        <th:block th:if="${currentUser.role.name() == 'STUDENT'}">
+            <section class="student-profile-shell" th:if="${!#lists.isEmpty(students)}">
+                <article class="panel student-profile-card" th:with="student=${students[0]}">
+                    <div class="student-profile-top">
+                        <div>
+                            <span class="status-chip" th:text="${student.currentStatus}">在读</span>
+                            <h2 th:text="${student.name}">学生姓名</h2>
+                            <p th:text="${student.major ?: '待分配专业'}">专业</p>
+                        </div>
+                        <div class="student-avatar-wrap">
+                            <img class="student-avatar-photo"
+                                 th:if="${student.photoUrl != null and !#strings.isEmpty(student.photoUrl)}"
+                                 th:src="${student.photoUrl}"
+                                 alt="学生头像">
+                            <div class="student-avatar-fallback"
+                                 th:if="${student.photoUrl == null or #strings.isEmpty(student.photoUrl)}"
+                                 th:text="${#strings.substring(student.name,0,1)}">学</div>
+                        </div>
+                    </div>
+
+                    <div class="student-info-grid">
+                        <div class="student-info-item">
+                            <span>学号</span>
+                            <strong th:text="${student.studentNo}">20260001</strong>
+                        </div>
+                        <div class="student-info-item">
+                            <span>班级</span>
+                            <strong th:text="${student.classroom ?: '待分班'}">计算机科学与技术1班</strong>
+                        </div>
+                        <div class="student-info-item">
+                            <span>入学日期</span>
+                            <strong th:text="${student.enrollmentDate ?: '-'}">2026-09-01</strong>
+                        </div>
+                        <div class="student-info-item">
+                            <span>年龄</span>
+                            <strong th:text="${student.age ?: '-'}">20</strong>
+                        </div>
+                        <div class="student-info-item">
+                            <span>性别</span>
+                            <strong th:text="${student.gender ?: '-'}">男</strong>
+                        </div>
+                        <div class="student-info-item">
+                            <span>手机号</span>
+                            <strong th:text="${student.phone ?: '未填写'}">13800000000</strong>
+                        </div>
+                    </div>
+                </article>
+
+                <section class="panel">
+                    <div class="section-head">
+                        <div>
+                            <p class="eyebrow">Status Timeline</p>
+                            <h2>学籍异动记录</h2>
+                        </div>
+                    </div>
+
+                    <div class="empty-state" th:if="${#lists.isEmpty(statusHistory)}">
+                        当前暂无学籍异动记录。
+                    </div>
+
+                    <div class="timeline-list" th:if="${!#lists.isEmpty(statusHistory)}">
+                        <article class="timeline-item" th:each="item : ${statusHistory}">
+                            <span class="timeline-marker"></span>
+                            <div class="timeline-content">
+                                <div class="timeline-top">
+                                    <strong th:text="${item.changeType.label}">转专业</strong>
+                                    <span class="timeline-meta" th:text="${item.changeDate}">2026-04-05</span>
+                                </div>
+                                <p th:text="${item.reason ?: '无补充说明'}">异动原因</p>
+                                <div class="timeline-meta">
+                                    <span th:text="'变更前：' + ${item.beforeStatus}">变更前：在读</span>
+                                    <span th:text="'变更后：' + ${item.afterStatus}">变更后：软件工程</span>
+                                </div>
+                            </div>
+                        </article>
+                    </div>
+                </section>
+            </section>
+        </th:block>
+
+        <th:block th:if="${currentUser.role.name() != 'STUDENT'}">
+            <section class="stats-grid">
+                <article class="stat-card"><span>学生总数</span><strong th:text="${studentCount}">0</strong></article>
+                <article class="stat-card"><span>平均年龄</span><strong th:text="${averageAge}">0</strong></article>
+                <article class="stat-card"><span>数据状态</span><strong>已同步</strong></article>
+            </section>
+
+            <section class="panel">
+                <table>
+                    <thead>
+                    <tr>
+                        <th>学号</th>
+                        <th>姓名</th>
+                        <th>班级</th>
+                        <th>专业</th>
+                        <th>入学日期</th>
+                        <th>状态</th>
+                        <th>操作</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="student : ${students}">
+                        <td th:text="${student.studentNo}">20260001</td>
+                        <td th:text="${student.name}">王小明</td>
+                        <td th:text="${student.classroom}">计算机1班</td>
+                        <td th:text="${student.major}">计算机科学与技术</td>
+                        <td th:text="${student.enrollmentDate}">2026-09-01</td>
+                        <td th:text="${student.currentStatus}">在读</td>
+                        <td class="actions">
+                            <a class="link-btn" th:href="@{'/students/' + ${student.id} + '/status'}">异动历史</a>
+                            <a class="link-btn" th:href="@{'/students/edit/' + ${student.id}}">编辑</a>
+                            <a class="danger-btn" th:href="@{'/students/delete/' + ${student.id}}">删除</a>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </section>
+        </th:block>
     </main>
 </div>
 </body>

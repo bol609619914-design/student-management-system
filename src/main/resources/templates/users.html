@@ -1,26 +1,90 @@
 <!DOCTYPE html>
 <html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>权限管理</title><link rel="stylesheet" th:href="@{/css/style.css}"></head>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>权限管理</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
 <body>
 <div class="admin-shell">
     <div th:replace="~{fragments :: sidebar('users')}"></div>
     <main class="main-content">
-        <section class="page-header"><div><p class="eyebrow">Identity & Access Management</p><h1>角色权限管理</h1><p>支持管理员、教师、学生三类角色分配，为后续菜单权限与功能访问控制提供基础。</p></div></section>
+        <section class="page-header">
+            <div>
+                <p class="eyebrow">身份与权限管理</p>
+                <h1>角色权限管理</h1>
+                <p>支持管理员、教师、学生三类角色分配，并可由管理员直接创建教师或学生账号。</p>
+            </div>
+        </section>
+
         <div class="message success" th:if="${successMessage}" th:text="${successMessage}"></div>
+        <div class="message error" th:if="${errorMessage}" th:text="${errorMessage}"></div>
+
+        <section class="panel form-panel">
+            <div class="panel-head">
+                <div>
+                    <h2>新增账号</h2>
+                    <p>管理员可在这里直接创建教师或学生账号，方便初始化演示数据。</p>
+                </div>
+            </div>
+            <form th:action="@{/users}" method="post">
+                <div class="form-grid">
+                    <div class="form-item">
+                        <label>姓名</label>
+                        <input name="fullName" type="text" placeholder="请输入姓名" required>
+                    </div>
+                    <div class="form-item">
+                        <label>用户名</label>
+                        <input name="username" type="text" placeholder="请输入用户名" required>
+                    </div>
+                    <div class="form-item">
+                        <label>初始密码</label>
+                        <input name="password" type="password" placeholder="不少于 6 位" required>
+                    </div>
+                    <div class="form-item">
+                        <label>手机号</label>
+                        <input name="phone" type="text" placeholder="选填">
+                    </div>
+                    <div class="form-item">
+                        <label>角色</label>
+                        <select name="role">
+                            <option th:each="role : ${roles}" th:value="${role}" th:text="${role.label}"></option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button class="primary-btn" type="submit">创建账号</button>
+                </div>
+            </form>
+        </section>
+
         <section class="panel">
             <table>
-                <thead><tr><th>姓名</th><th>用户名</th><th>当前角色</th><th>操作</th></tr></thead>
+                <thead>
+                <tr>
+                    <th>姓名</th>
+                    <th>用户名</th>
+                    <th>当前角色</th>
+                    <th>操作</th>
+                </tr>
+                </thead>
                 <tbody>
                 <tr th:each="user : ${users}">
                     <td th:text="${user.fullName}">系统管理员</td>
                     <td th:text="${user.username}">admin</td>
-                    <td th:text="${user.role.label}">管理员</td>
                     <td>
-                        <form th:action="@{'/users/' + ${user.id} + '/role'}" method="post" class="inline-form">
-                            <select name="role">
-                                <option th:each="role : ${roles}" th:value="${role}" th:text="${role.label}" th:selected="${role == user.role}"></option>
+                        <span class="status-chip chip-pending" th:text="${user.role.label}">管理员</span>
+                    </td>
+                    <td>
+                        <form th:action="@{'/users/' + ${user.id} + '/role'}" method="post" class="role-form">
+                            <select class="role-select" name="role">
+                                <option th:each="role : ${roles}"
+                                        th:value="${role}"
+                                        th:text="${role.label}"
+                                        th:selected="${role == user.role}"></option>
                             </select>
-                            <button class="secondary-btn" type="submit">更新角色</button>
+                            <button class="role-submit" type="submit">更新角色</button>
                         </form>
                     </td>
                 </tr>

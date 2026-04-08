@@ -34,6 +34,9 @@ public class StudentController {
         boolean studentView = currentUser.getRole() == UserRole.STUDENT;
         Student self = studentView ? studentService.findOrCreateByUserId(currentUser.getId()) : null;
         List<Student> students = studentView ? List.of(self) : studentService.findAll();
+        if (studentView && self != null) {
+            model.addAttribute("statusHistory", studentService.getStatusHistory(self.getId()));
+        }
         model.addAttribute("students", students.stream().filter(item -> item != null).toList());
         model.addAttribute("studentCount", studentView ? (self == null ? 0 : 1) : studentService.count());
         model.addAttribute("averageAge", studentView

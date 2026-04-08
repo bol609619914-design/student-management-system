@@ -35,7 +35,8 @@ public class LeaveController {
             Student student = studentService.findOrCreateByUserId(currentUser.getId());
             model.addAttribute("leaveRequests", student == null ? List.of() : leaveService.findStudentLeaves(student.getId()));
         } else {
-            model.addAttribute("leaveRequests", leaveService.findAll());
+            model.addAttribute("pendingLeaveRequests", leaveService.findPending());
+            model.addAttribute("processedLeaveRequests", leaveService.findProcessed());
         }
         return "leaves";
     }
@@ -71,6 +72,24 @@ public class LeaveController {
             return "redirect:/leaves";
         }
         leaveService.approve(id, currentUser, approved, comment);
+        redirectAttributes.addFlashAttribute("successMessage", approved ? "请假申请已通过" : "请假申请已驳回");
+        return "redirect:/leaves";
+    }
+
+    @PostMapping("/leaves/{id}/approve")
+    public String approveWithComment(@PathVariable Long id,
+                                     @RequestParam boolean approved,
+                                     @RequestParam(required = false) String comment,
+                                     HttpSession session,
+                                     RedirectAttributes redirectAttributes) {
+        AppUser currentUser = (AppUser) session.getAttribute("loginUser");
+        if (currentUser.getRole() == UserRole.STUDENT) {
+            return "redirect:/leaves";
+        }
+        String finalComment = (comment == null || comment.isBlank())
+                ? (approved ? "审批通过" : "审批驳回")
+                : comment.trim();
+        leaveService.approve(id, currentUser, approved, finalComment);
         redirectAttributes.addFlashAttribute("successMessage", approved ? "请假申请已通过" : "请假申请已驳回");
         return "redirect:/leaves";
     }

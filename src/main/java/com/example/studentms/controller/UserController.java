@@ -60,6 +60,27 @@ public class UserController {
         return "users";
     }
 
+    @PostMapping("/users")
+    public String createUser(@ModelAttribute("fullName") String fullName,
+                             @ModelAttribute("username") String username,
+                             @ModelAttribute("password") String password,
+                             @ModelAttribute("phone") String phone,
+                             @ModelAttribute("role") UserRole role,
+                             HttpSession session,
+                             RedirectAttributes redirectAttributes) {
+        AppUser currentUser = (AppUser) session.getAttribute("loginUser");
+        if (currentUser.getRole() != UserRole.ADMIN) {
+            return "redirect:/dashboard";
+        }
+        try {
+            authService.createManagedUser(fullName, username, password, phone, role);
+            redirectAttributes.addFlashAttribute("successMessage", "账号创建成功");
+        } catch (IllegalArgumentException ex) {
+            redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
+        }
+        return "redirect:/users";
+    }
+
     @PostMapping("/users/{id}/role")
     public String updateRole(@PathVariable Long id,
                              @ModelAttribute("role") UserRole role,

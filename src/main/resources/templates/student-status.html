@@ -1,25 +1,60 @@
 <!DOCTYPE html>
 <html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>学籍异动</title><link rel="stylesheet" th:href="@{/css/style.css}"></head>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>学籍异动</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
 <body>
 <div class="admin-shell">
     <div th:replace="~{fragments :: sidebar('students')}"></div>
     <main class="main-content">
-        <section class="page-header"><div><p class="eyebrow">学籍异动记录</p><h1 th:text="${student.name + ' 的学籍历史'}">学生学籍历史</h1><p>保留转专业、休学、留级等历史，不直接删除数据。</p></div></section>
+        <section class="page-header">
+            <div>
+                <p class="eyebrow">Student Status Timeline</p>
+                <h1 th:text="${student.name + ' 的学籍历史'}">学生学籍历史</h1>
+                <p>保留转专业、休学、留级等异动记录，不直接删除历史数据。</p>
+            </div>
+        </section>
+
         <div class="message success" th:if="${successMessage}" th:text="${successMessage}"></div>
+
         <section class="panel form-panel" th:if="${currentUser.role.name() != 'STUDENT'}">
             <form th:action="@{'/students/' + ${student.id} + '/status'}" method="post">
                 <div class="form-grid">
-                    <div class="form-item"><label>异动类型</label><select name="changeType"><option th:each="type : ${statusTypes}" th:value="${type}" th:text="${type.label}"></option></select></div>
-                    <div class="form-item"><label>变更后状态/专业</label><input name="afterStatus" type="text"></div>
-                    <div class="form-item full-width"><label>原因说明</label><input name="reason" type="text"></div>
+                    <div class="form-item">
+                        <label>异动类型</label>
+                        <select name="changeType">
+                            <option th:each="type : ${statusTypes}" th:value="${type}" th:text="${type.label}"></option>
+                        </select>
+                    </div>
+                    <div class="form-item">
+                        <label>变更后状态 / 专业</label>
+                        <input name="afterStatus" type="text">
+                    </div>
+                    <div class="form-item full-width">
+                        <label>原因说明</label>
+                        <input name="reason" type="text">
+                    </div>
                 </div>
-                <div class="form-actions"><button class="primary-btn" type="submit">保存异动</button></div>
+                <div class="form-actions">
+                    <button class="primary-btn" type="submit">保存异动</button>
+                </div>
             </form>
         </section>
+
         <section class="panel">
             <table>
-                <thead><tr><th>日期</th><th>异动类型</th><th>变更前</th><th>变更后</th><th>原因</th></tr></thead>
+                <thead>
+                <tr>
+                    <th>日期</th>
+                    <th>异动类型</th>
+                    <th>变更前</th>
+                    <th>变更后</th>
+                    <th>原因</th>
+                </tr>
+                </thead>
                 <tbody>
                 <tr th:each="item : ${history}">
                     <td th:text="${item.changeDate}">2026-04-05</td>

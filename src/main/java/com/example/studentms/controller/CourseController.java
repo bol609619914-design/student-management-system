@@ -33,7 +33,9 @@ public class CourseController {
     }
 
     @GetMapping("/courses")
-    public String coursePage(HttpSession session, Model model) {
+    public String coursePage(@RequestParam(required = false) Long editId,
+                             HttpSession session,
+                             Model model) {
         AppUser currentUser = (AppUser) session.getAttribute("loginUser");
         model.addAttribute("courses", currentUser.getRole() == UserRole.TEACHER
                 ? courseService.findCoursesForTeacher(currentUser.getId())
@@ -42,6 +44,7 @@ public class CourseController {
                 .filter(user -> user.getRole() == UserRole.TEACHER)
                 .toList());
         model.addAttribute("natures", CourseNature.values());
+        model.addAttribute("editingCourse", editId == null ? null : courseService.findCourse(editId));
         if (currentUser.getRole() == UserRole.STUDENT) {
             Student student = studentService.findOrCreateByUserId(currentUser.getId());
             model.addAttribute("myCourses", student == null ? List.of() : courseService.findEnrollmentsByStudent(student.getId()));
@@ -88,7 +91,7 @@ public class CourseController {
             course.setCapacity(capacity);
             course.setDescription(description);
             courseService.saveCourse(course);
-            redirectAttributes.addFlashAttribute("successMessage", "课程保存成功");
+            redirectAttributes.addFlashAttribute("successMessage", id == null ? "课程创建成功" : "课程更新成功");
         } catch (IllegalArgumentException ex) {
             redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
         }
