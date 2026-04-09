@@ -12,7 +12,7 @@
     <main class="main-content">
         <section class="page-header" th:if="${currentUser.role.name() != 'STUDENT'}">
             <div>
-                <p class="eyebrow">Student Information System</p>
+                <p class="eyebrow">学籍信息模块</p>
                 <h1>学籍信息数字化</h1>
                 <p>覆盖基础档案、照片、班级归属和学籍全生命周期管理。</p>
             </div>
@@ -21,7 +21,7 @@
 
         <section class="page-header" th:if="${currentUser.role.name() == 'STUDENT'}">
             <div>
-                <p class="eyebrow">My Student Profile</p>
+                <p class="eyebrow">个人学籍档案</p>
                 <h1>我的学籍</h1>
                 <p>查看个人学籍档案、入学信息和异动记录。</p>
             </div>
@@ -81,7 +81,7 @@
                 <section class="panel">
                     <div class="section-head">
                         <div>
-                            <p class="eyebrow">Status Timeline</p>
+                            <p class="eyebrow">学籍变动时间线</p>
                             <h2>学籍异动记录</h2>
                         </div>
                     </div>
@@ -141,7 +141,10 @@
                         <td class="actions">
                             <a class="link-btn" th:href="@{'/students/' + ${student.id} + '/status'}">异动历史</a>
                             <a class="link-btn" th:href="@{'/students/edit/' + ${student.id}}">编辑</a>
-                            <a class="danger-btn" th:href="@{'/students/delete/' + ${student.id}}">删除</a>
+                            <form th:action="@{'/students/delete/' + ${student.id}}" method="post"
+                                  onsubmit="return confirm('确认删除该学生学籍信息吗？关联的选课、成绩、请假和异动记录也会一并清理。');">
+                                <button class="danger-btn" type="submit">删除</button>
+                            </form>
                         </td>
                     </tr>
                     </tbody>

@@ -11,4 +11,6 @@ public interface GradeRecordRepository extends JpaRepository<GradeRecord, Long> 
     Optional<GradeRecord> findByEnrollmentId(Long enrollmentId);
 
     List<GradeRecord> findByEnrollmentStudentId(Long studentId);
+
+    void deleteByEnrollmentStudentId(Long studentId);
 }

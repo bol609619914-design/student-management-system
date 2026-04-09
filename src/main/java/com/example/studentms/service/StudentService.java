@@ -6,8 +6,12 @@ import com.example.studentms.model.StudentStatusChange;
 import com.example.studentms.model.StudentStatusType;
 import com.example.studentms.model.UserRole;
 import com.example.studentms.repository.AppUserRepository;
+import com.example.studentms.repository.EnrollmentRepository;
+import com.example.studentms.repository.GradeRecordRepository;
+import com.example.studentms.repository.LeaveRequestRepository;
 import com.example.studentms.repository.StudentRepository;
 import com.example.studentms.repository.StudentStatusChangeRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -19,13 +23,22 @@ public class StudentService {
     private final AppUserRepository appUserRepository;
     private final StudentRepository studentRepository;
     private final StudentStatusChangeRepository statusChangeRepository;
+    private final LeaveRequestRepository leaveRequestRepository;
+    private final EnrollmentRepository enrollmentRepository;
+    private final GradeRecordRepository gradeRecordRepository;
 
     public StudentService(AppUserRepository appUserRepository,
                           StudentRepository studentRepository,
-                          StudentStatusChangeRepository statusChangeRepository) {
+                          StudentStatusChangeRepository statusChangeRepository,
+                          LeaveRequestRepository leaveRequestRepository,
+                          EnrollmentRepository enrollmentRepository,
+                          GradeRecordRepository gradeRecordRepository) {
         this.appUserRepository = appUserRepository;
         this.studentRepository = studentRepository;
         this.statusChangeRepository = statusChangeRepository;
+        this.leaveRequestRepository = leaveRequestRepository;
+        this.enrollmentRepository = enrollmentRepository;
+        this.gradeRecordRepository = gradeRecordRepository;
     }
 
     public List<Student> findAll() {
@@ -86,8 +99,23 @@ public class StudentService {
         studentRepository.save(student);
     }
 
+    @Transactional
     public void deleteById(Long id) {
-        studentRepository.deleteById(id);
+        Student student = studentRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("学生信息不存在"));
+
+        gradeRecordRepository.deleteByEnrollmentStudentId(id);
+        enrollmentRepository.deleteByStudentId(id);
+        leaveRequestRepository.deleteByStudentId(id);
+        statusChangeRepository.deleteByStudentId(id);
+
+        AppUser linkedUser = student.getUser();
+        studentRepository.delete(student);
+
+        if (linkedUser != null && linkedUser.getRole() == UserRole.STUDENT) {
+            linkedUser.setEnabled(Boolean.FALSE);
+            appUserRepository.save(linkedUser);
+        }
     }
 
     public long count() {

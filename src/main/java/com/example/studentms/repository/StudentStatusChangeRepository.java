@@ -8,4 +8,6 @@ import java.util.List;
 public interface StudentStatusChangeRepository extends JpaRepository<StudentStatusChange, Long> {
 
     List<StudentStatusChange> findByStudentIdOrderByChangeDateDesc(Long studentId);
+
+    void deleteByStudentId(Long studentId);
 }

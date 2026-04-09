@@ -116,7 +116,7 @@ public class StudentController {
         return "redirect:/students";
     }
 
-    @GetMapping("/students/delete/{id}")
+    @PostMapping("/students/delete/{id}")
     public String deleteStudent(@PathVariable Long id, HttpSession session, RedirectAttributes redirectAttributes) {
         if (((AppUser) session.getAttribute("loginUser")).getRole() == UserRole.STUDENT) {
             return "redirect:/students";

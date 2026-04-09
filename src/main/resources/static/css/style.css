@@ -140,6 +140,13 @@ th {
 .actions {
     display: flex;
     gap: 10px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.actions form {
+    display: inline-flex;
+    margin: 0;
 }
 
 .primary-btn,

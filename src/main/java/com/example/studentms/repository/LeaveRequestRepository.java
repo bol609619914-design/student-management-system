@@ -15,4 +15,6 @@ public interface LeaveRequestRepository extends JpaRepository<LeaveRequest, Long
     List<LeaveRequest> findByStatusOrderBySubmittedAtDesc(LeaveStatus status);
 
     List<LeaveRequest> findByStatusNotOrderBySubmittedAtDesc(LeaveStatus status);
+
+    void deleteByStudentId(Long studentId);
 }
